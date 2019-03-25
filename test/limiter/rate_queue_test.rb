@@ -24,6 +24,15 @@ module Limiter
       end
     end
 
+    def test_shift_nonblocking
+      Timecop.freeze do
+        @queue.shift
+        assert_raises(WouldBlock) do
+          @queue.shift(wait: false)
+        end
+      end
+    end
+
     def test_shift_is_rate_limited_across_multiple_threads
       assert_elapsed(COUNT.to_f / RATE - 1) do
         threads = Array.new(COUNT) do

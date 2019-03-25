@@ -72,6 +72,18 @@ class Widget
 end
 ```
 
+You can also perform a non-blocking call to a mixin-wrapped method or the `RateQueue` class:
+
+``` ruby
+queue = RateQueue.new(1)
+queue.shift
+queue.shift(wait: false)
+# => raises `Limiter::WouldBlock`
+```
+
+Each method wrapped via `limit_method` will have a second generated method with the `_nowait`
+suffix which sets the `wait: false` arg and raises as per the above.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

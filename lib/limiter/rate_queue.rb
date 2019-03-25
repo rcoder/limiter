@@ -4,6 +4,8 @@ module Limiter
   class RateQueue
     EPOCH = Time.at(0)
 
+    attr_reader :size, :interval
+
     def initialize(size, interval: 60)
       @size = size
       @interval = interval
@@ -13,27 +15,25 @@ module Limiter
       @mutex = Mutex.new
     end
 
-    def shift
+    def shift(wait: true)
       time = nil
 
       @mutex.synchronize do
         time = @ring[@head]
+        sleep_interval = (time + @interval) - Time.now
 
-        sleep_until(time + @interval)
+        if sleep_interval.positive?
+          # raise if we would sleep but the `wait` param is false
+          raise WouldBlock.new(sleep_interval.to_s) unless wait
+
+          sleep(sleep_interval)
+        end
 
         @ring[@head] = Time.now
         @head = (@head + 1) % @size
       end
 
       time
-    end
-
-    private
-
-    def sleep_until(time)
-      interval = time - Time.now
-      return unless interval.positive?
-      sleep(interval)
     end
   end
 end

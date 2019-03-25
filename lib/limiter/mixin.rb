@@ -10,6 +10,11 @@ module Limiter
           queue.shift
           super(*args)
         end
+
+        define_method("#{method}_nowait".to_sym) do |*args|
+          queue.shift(wait: false)
+          super(*args)
+        end
       end
 
       prepend mixin

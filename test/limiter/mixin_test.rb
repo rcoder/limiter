@@ -40,6 +40,15 @@ module Limiter
       end
     end
 
+    def test_nowait_method_raises
+      Timecop.freeze do
+        @object.tick
+        assert_raises(WouldBlock) do
+          @object.tick_nowait
+        end
+      end
+    end
+
     def test_original_method_is_called
       COUNT.times do
         @object.tick
